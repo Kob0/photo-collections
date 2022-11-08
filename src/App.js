@@ -1,6 +1,7 @@
 import React from 'react';
 
 import Collection from './Collection';
+import Pagination from './Pagination';
 
 import './index.scss';
 
@@ -12,8 +13,6 @@ const catList = [
   { name: 'Города' },
 ];
 
-const pagesList = [1, 2, 3];
-
 function App() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [searchValue, setSearchValue] = React.useState('');
@@ -21,13 +20,17 @@ function App() {
   const [categoryId, setCategoryId] = React.useState(0);
   const [currentPage, setCurrentPage] = React.useState(1);
 
-  const category = categoryId ? `category=${categoryId}` : '';
-  const page = currentPage + 1;
+  const category = categoryId ? `&category=${categoryId}` : '';
+  const search = searchValue ? `&search=${searchValue}` : '';
+
+  const onChangePage = (num) => {
+    setCurrentPage(num);
+  };
 
   React.useEffect(() => {
     setIsLoading(true);
     fetch(
-      `https://6367e4d6edc85dbc84de10fd.mockapi.io/photos-collection?&page=${page}&limit=3&${category}`,
+      `https://6367e4d6edc85dbc84de10fd.mockapi.io/photos-collection?&page=${currentPage}&limit=3${category}${search}`,
     )
       .then((res) => res.json())
       .then((data) => setCollections(data))
@@ -38,7 +41,7 @@ function App() {
       .finally(() => {
         setIsLoading(false);
       });
-  }, [categoryId, currentPage]);
+  }, [categoryId, currentPage, searchValue]);
 
   return (
     <div className="wrapper">
@@ -68,21 +71,14 @@ function App() {
             <h2>Идет загрузка ...</h2>
           ) : (
             collections
-              .filter((item) => item.name.toLowerCase().includes(searchValue.toLocaleLowerCase()))
+              // .filter((item) => item.name.toLowerCase().includes(searchValue.toLocaleLowerCase()))
               .map((item, index) => (
                 <Collection key={index} name={item.name} images={item.photos} />
               ))
           )}
         </div>
         <ul className="pagination">
-          {pagesList.map((page, i) => (
-            <li
-              onClick={() => setCurrentPage(i)}
-              className={currentPage === i ? 'active' : ''}
-              key={i}>
-              {page}
-            </li>
-          ))}
+          <Pagination currentPage={currentPage} onChangePage={onChangePage} />
         </ul>
       </div>
     </div>
